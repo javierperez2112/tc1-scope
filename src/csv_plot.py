@@ -23,6 +23,6 @@ def graphfile(array: np.array, root: tk.Widget):
     for i in range(1,len(array)):
         plot1.plot(array[0], array[i])
     graph1 = FigureCanvasTkAgg(fig, root)
-    graph1.get_tk_widget().pack()
+    graph1.get_tk_widget().pack(fill=tk.BOTH)
     
 

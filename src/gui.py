@@ -6,8 +6,12 @@ def search(event):
     # Si se encuentra el archivo, pasa a pantalla principal
     (fileopen, array) = csv_plot.openfile(ent_filename.get())
     if fileopen:
-        frm_welcome.destroy()
-        frm_board.pack(fill=tk.BOTH)
+        #frm_welcome.destroy()
+        #frm_board.pack(fill=tk.BOTH, expand=True)
+        pwindow.remove(frm_welcome)
+        pwindow.add(frm_board)
+        window.minsize(width =100, height=310)
+        window.resizable(width=True, height=True)
         csv_plot.graphfile(array=array, root=frm_screen)
     else:
         lbl_file.config(text="File not found or unable to open.")
@@ -16,10 +20,13 @@ window = tk.Tk()
 window.resizable(width=False, height=False)
 window.title("TC1-SCOPE")
 
-frm_screen = tk.Frame(width=610, height=410, bg="black", borderwidth=5, relief=tk.SUNKEN, master=window)
-frm_welcome = tk.Frame(borderwidth=5, relief=tk.RAISED, master=window)
-frm_board = tk.Frame(width = 610, height = 310, borderwidth=5, relief=tk.RAISED, master=window)
-frm_board.grid_propagate(0)
+pwindow = tk.PanedWindow(master=window, orient=tk.VERTICAL, borderwidth=0, showhandle=False, sashwidth=2)
+pwindow.pack(fill=tk.BOTH)
+
+# Screen frames
+frm_screen = tk.Frame(width=610, height=410, bg="black", borderwidth=3, relief=tk.SUNKEN, master=pwindow)
+frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED, master=pwindow)
+frm_board = tk.Frame(width = 610, height = 310, borderwidth=3, relief=tk.RAISED, master=pwindow)
 
 # Welcome screen
 lbl_file = tk.Label(text="Input filename", master=frm_welcome)
@@ -36,10 +43,10 @@ btn_searchfile.pack()
 
 
 # Layout
-#frm_screen.grid(row=0,column=0,sticky="nsew")
-#frm_board.grid(row=1,column=0, sticky="nsew")
-frm_screen.pack(fill=tk.BOTH)
-frm_welcome.pack(fill=tk.BOTH)
+#frm_screen.pack(fill=tk.BOTH)
+#frm_welcome.pack(fill=tk.BOTH)
+pwindow.add(frm_screen)
+pwindow.add(frm_welcome)
 
 # Start the event loop.
 window.mainloop()
