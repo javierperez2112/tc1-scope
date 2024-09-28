@@ -6,18 +6,20 @@ import tkinter as tk
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-def openfile(filename: str) -> np.array:
+# Abre el archivo, devuelve si se pudo abrir y np.array correspondiente
+def openfile(filename: str) -> {bool, np.array}:
     try:
         file = open(filename, mode="r")
         dataframe = pd.read_csv(file, sep='\t')
     except:
-        return None
+        return (False, None)
     array = dataframe.to_numpy().transpose()
-    return array
+    return (True, array)
 
+# Grafica el np.array en el tk widget
 def graphfile(array: np.array, root: tk.Widget):
     fig = plt.Figure()
-    plot1 = fig.add_subplot(111)
+    plot1 = fig.add_subplot()
     for i in range(1,len(array)):
         plot1.plot(array[0], array[i])
     graph1 = FigureCanvasTkAgg(fig, root)

@@ -4,8 +4,8 @@ import csv_plot
 
 def search(event):
     # Si se encuentra el archivo, pasa a pantalla principal
-    array = csv_plot.openfile(ent_filename.get())
-    if array.all() != None:
+    (fileopen, array) = csv_plot.openfile(ent_filename.get())
+    if fileopen:
         frm_welcome.destroy()
         frm_board.pack(fill=tk.BOTH)
         csv_plot.graphfile(array=array, root=frm_screen)
