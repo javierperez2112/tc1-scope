@@ -1,10 +1,22 @@
 import tkinter as tk
+from tkinter import filedialog
 import csv_plot
 
+def browse_files(event):
+    filename = filedialog.askopenfilename(initialdir = ".",
+                                          title = "Select a File",
+                                          filetypes = (("Text files",
+                                                        "*.csv*"),
+                                                       ("all files",
+                                                        "*.*")))
+    search(filename=filename)
 
-def search(event):
+def browse_entry(event):
+    search(ent_filename.get())
+    
+def search(filename):
     # Si se encuentra el archivo, pasa a pantalla principal
-    (fileopen, array) = csv_plot.openfile(ent_filename.get())
+    (fileopen, array) = csv_plot.openfile(filename=filename)
     if fileopen:
         #frm_welcome.destroy()
         #frm_board.pack(fill=tk.BOTH, expand=True)
@@ -29,15 +41,19 @@ frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED, master=pwindow)
 frm_board = tk.Frame(width = 610, height = 310, borderwidth=3, relief=tk.RAISED, master=pwindow)
 
 # Welcome screen
-lbl_file = tk.Label(text="Input filename", master=frm_welcome)
+lbl_file = tk.Label(text="Select file", master=frm_welcome)
 ent_filename = tk.Entry(master=frm_welcome)
-btn_searchfile = tk.Button(text="Search", master=frm_welcome)
-btn_searchfile.bind("<Button-1>", search)
+ent_filename.bind("<Return>", browse_entry)
+btn_browse = tk.Button(text="Browse", master=frm_welcome)
+btn_entry = tk.Button(text="Open", master=frm_welcome)
+btn_browse.bind("<Button-1>", browse_files)
+btn_entry.bind("<Button-1>", browse_entry)
 filefound = False
 
 lbl_file.pack()
 ent_filename.pack()
-btn_searchfile.pack()
+btn_entry.pack()
+btn_browse.pack()
 
 # Main screen
 

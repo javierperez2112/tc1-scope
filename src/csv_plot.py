@@ -10,7 +10,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def openfile(filename: str) -> {bool, np.array}:
     try:
         file = open(filename, mode="r")
-        dataframe = pd.read_csv(file, sep='\t')
+        dataframe = pd.read_csv(file, sep='\t') # Está en TSV, alta paja cambiarlo
     except:
         return (False, None)
     array = dataframe.to_numpy().transpose()
