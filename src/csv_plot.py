@@ -16,17 +16,33 @@ def openfile(filename: str) -> {bool, np.array}:
     # Eliminar columnas no numéricas, ONE LINER INCOMING!!!!!
     dataframe = dataframe.apply(pd.to_numeric, errors='coerce').dropna(axis=1)
     array = dataframe.to_numpy().transpose()
-    print(dataframe)
+    print(dataframe)    # Debug
     return (True, array)
-
-# Grafica el np.array en el tk widget
-def graphfile(array: np.array, root: tk.Widget):
-    fig = plt.Figure()
-    plot1 = fig.add_subplot()
-    for i in range(0,len(array) // 2):
-        plot1.plot(array[2*i], array[2*i+1])
-    plot1.grid(True)
-    graph1 = FigureCanvasTkAgg(fig, root)
-    graph1.get_tk_widget().pack(fill=tk.BOTH)
     
+class PlotData:
+    def __init__(self, array: np.array,  root: tk.Widget):
+        self.colors = []
+        self.n_channels = len(array) // 2
+        for i in range(self.n_channels):
+            self.colors.append('blue')
+        self.array = array
+        self.root = root
+        self.vdiv = []
+        for i in range(0, self.n_channels):
+            self.vdiv.append(1.0)
+    
+    # Grafica el np.array en el tk widget
+    def updateplot(self, event=None):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        fig = plt.Figure()
+        plot = fig.add_subplot()
+        plot.grid(True)
+        for i in range(0, self.n_channels):
+            plot.plot(self.array[2*i], (1/self.vdiv[i]) * (self.array[2*i + 1]), self.colors[i])
+        graph = FigureCanvasTkAgg(fig, self.root)
+        graph.get_tk_widget().pack(fill=tk.BOTH)
+        print(self.root.winfo_children())   # Debug
+
+
 
