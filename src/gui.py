@@ -59,7 +59,7 @@ class TC1ScopeApp:
             # Initialize the data and create channel controls
             self.data = csv_plot.PlotData(array, self.frm_screen)
             self.data.makeplot()
-            self.chan_vdiv, self.chan_color = self.create_channels(self.data.n_channels)
+            self.create_channels(self.data.n_channels)
             self.root.bind("<Return>", self.update_channels)
             
             # Set update button action
@@ -71,15 +71,22 @@ class TC1ScopeApp:
 
     def create_channels(self, n_channels):
         chan_vdiv = []
+        chan_offset = []
         chan_color = []
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
 
             lbl_channel = tk.Label(text=f"Channel {i + 1}\nV/div", master=panel)
-            spb_vdiv = tk.Spinbox(from_=0.1, to=10, increment=0.1, master=panel)
+            spb_vdiv = tk.Spinbox(from_=0.1, to=100, increment=0.1, master=panel)
             spb_vdiv.delete(0, tk.END)
-            spb_vdiv.insert(0, 1)
+            spb_vdiv.insert(0, "1.0")
             spb_vdiv.config(command=self.update_channels)
+
+            lbl_offset = tk.Label(text="V offset", master=panel)
+            spb_offset = tk.Spinbox(from_=-10, to=10, increment=0.1, master=panel)
+            spb_offset.config(command=self.update_channels)
+            spb_offset.delete(0, tk.END)
+            spb_offset.insert(0, "0.0")
 
             lbl_color = tk.Label(text="Color", master=panel)
             cbb_color = ttk.Combobox(values=["blue", "green", "red", "cyan", "magenta", "orange", "black", "white"],
@@ -90,18 +97,23 @@ class TC1ScopeApp:
             # Pack widgets
             lbl_channel.pack()
             spb_vdiv.pack()
+            lbl_offset.pack()
+            spb_offset.pack()
             lbl_color.pack()
             cbb_color.pack()
             panel.pack(side=tk.LEFT)
 
             chan_vdiv.append(spb_vdiv)
+            chan_offset.append(spb_offset)
             chan_color.append(cbb_color)
-
-        return chan_vdiv, chan_color
+        self.chan_vdiv = chan_vdiv
+        self.chan_offset = chan_offset
+        self.chan_color = chan_color
 
     def update_channels(self, event=0):
         for i in range(self.data.n_channels):
             self.data.vdiv[i] = float(self.chan_vdiv[i].get())
+            self.data.offset[i] = float(self.chan_offset[i].get())
             self.data.colors[i] = self.chan_color[i].get()
         self.data.updateplot()
 
