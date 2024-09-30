@@ -29,7 +29,7 @@ class TC1ScopeApp:
         self.btn_browse.pack()
 
         # Bind events to buttons
-        self.ent_filename.bind("<Return>", self.search_entry)
+        self.root.bind("<Return>", self.search_entry)
         self.btn_browse.bind("<Button-1>", self.browse_files)
         self.btn_entry.bind("<Button-1>", self.search_entry)
 
@@ -60,6 +60,7 @@ class TC1ScopeApp:
             self.data = csv_plot.PlotData(array, self.frm_screen)
             self.data.makeplot()
             self.chan_vdiv, self.chan_color = self.create_channels(self.data.n_channels)
+            self.root.bind("<Return>", self.update_channels)
             
             # Set update button action
             self.btn_update.config(command=self.update_channels)

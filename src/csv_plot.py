@@ -16,7 +16,7 @@ def openfile(filename: str) -> {bool, np.array}:
     # Eliminar columnas no numéricas, ONE LINER INCOMING!!!!!
     dataframe = dataframe.apply(pd.to_numeric, errors='coerce').dropna(axis=1)
     array = dataframe.to_numpy().transpose()
-    print(dataframe)    # Debug
+    #print(dataframe)    # Debug
     return (True, array)
     
 class PlotData:
@@ -42,7 +42,7 @@ class PlotData:
             self.plot.plot(self.array[2*i], (1/self.vdiv[i]) * (self.array[2*i + 1]), self.colors[i])
         self.canvas = FigureCanvasTkAgg(fig, self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH)
-        print(self.root.winfo_children())   # Debug
+        #print(self.root.winfo_children())   # Debug
 
     def updateplot(self, event=None):
         self.plot.clear()
