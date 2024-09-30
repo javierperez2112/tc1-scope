@@ -9,7 +9,8 @@ def browse_files(event):
                                                         "*.csv*"),
                                                        ("all files",
                                                         "*.*")))
-    search(filename=filename)
+    ent_filename.delete(0, tk.END)
+    ent_filename.insert(0, filename)
 
 def browse_entry(event):
     search(ent_filename.get())
