@@ -32,17 +32,24 @@ class PlotData:
             self.vdiv.append(1.0)
     
     # Grafica el np.array en el tk widget
-    def updateplot(self, event=None):
+    def makeplot(self, event=None):
         for widget in self.root.winfo_children():
             widget.destroy()
         fig = plt.Figure()
-        plot = fig.add_subplot()
-        plot.grid(True)
+        self.plot = fig.add_subplot()
+        self.plot.grid(True)
         for i in range(0, self.n_channels):
-            plot.plot(self.array[2*i], (1/self.vdiv[i]) * (self.array[2*i + 1]), self.colors[i])
-        graph = FigureCanvasTkAgg(fig, self.root)
-        graph.get_tk_widget().pack(fill=tk.BOTH)
+            self.plot.plot(self.array[2*i], (1/self.vdiv[i]) * (self.array[2*i + 1]), self.colors[i])
+        self.canvas = FigureCanvasTkAgg(fig, self.root)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH)
         print(self.root.winfo_children())   # Debug
+
+    def updateplot(self, event=None):
+        self.plot.clear()
+        for i in range(0, self.n_channels):
+            self.plot.plot(self.array[2*i], (1/self.vdiv[i]) * (self.array[2*i + 1]), self.colors[i])
+        self.plot.grid(True)
+        self.canvas.draw()
 
 
 
