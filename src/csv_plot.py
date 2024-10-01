@@ -12,7 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def openfile(filename: str) -> {bool, np.array}:
     try:
         dataframe = pd.read_csv(filename, sep=',')
-        print(dataframe.columns.size)
+        #print(dataframe.columns.size)  # Debug
         # Si solo hay una columna, debe ser TSV. Big brain 600 iq move
         if int(dataframe.columns.size) <= 1:
             dataframe = pd.read_csv(filename, sep='\t')
@@ -21,7 +21,7 @@ def openfile(filename: str) -> {bool, np.array}:
     # Eliminar columnas no numéricas, ONE LINER INCOMING!!!!!
     #dataframe = dataframe.apply(pd.to_numeric, errors='coerce').dropna(axis=1)
     array = dataframe.to_numpy().transpose()
-    print(dataframe)    # Debug
+    #print(dataframe)    # Debug
     return (True, array)
     
 class PlotData:
@@ -45,30 +45,45 @@ class PlotData:
         self.zoom = 1
         self.lowlimx = min(self.array[0])
         self.highlimx = max(self.array[0])
+        self.delta_t = self.highlimx - self.lowlimx
         self.toffset = 0.0
         self.plot = fig.add_subplot()
         self.plot.set_xlim(self.lowlimx, self.highlimx)
-        self.plot.yaxis.set_major_locator(MultipleLocator(1))
+        self.gridy = 1
+        self.gridx = "1"
         self.plot.grid(True)
-        for i in range(0, self.n_channels):
-            self.plot.plot(self.array[0], self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
+        self.plot.xaxis.set_tick_params(labelbottom=False)
         self.canvas = FigureCanvasTkAgg(fig, self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH)
+        self.updateplot()
         #print(self.root.winfo_children())   # Debug
 
     def updateplot(self, event=None):
         self.plot.clear()
+
+        (gridx_base, gridx_exp) = get_unit(self.gridx)
+        gridx = gridx_base * gridx_exp
+        #print(gridx_base * gridx_exp)  # Debug
+        self.plot.yaxis.set_major_locator(MultipleLocator(self.gridy))
+        self.plot.xaxis.set_major_locator(MultipleLocator(gridx))
         self.plot.set_xlim([self.lowlimx / self.zoom, self.highlimx / self.zoom])
-        self.plot.yaxis.set_major_locator(MultipleLocator(1))
         for i in range(0, self.n_channels):
-            self.plot.plot((self.array[0] - self.toffset), self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
+            self.plot.plot((self.array[0] - self.toffset), 
+                           self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
         self.plot.grid(True)
         self.canvas.draw()
 
+def get_unit(val):
+    if val[-1].isalpha():
+        base = float(val[0:-1])
+        exp = unit_multipliers[val[-1]]
+    else:
+        base = float(val)
+        exp = 1
+    return (base, exp)
 
 unit_multipliers = {
-    'n': 1e-9,  # nano
-    'u': 1e-6,  # micro
-    'm': 1e-3,  # milli
-    's': 1,      # one
+    'n': 1.0E-9,  # nano
+    'u': 1.0E-6,  # micro
+    'm': 1E-3,  # milli
 }

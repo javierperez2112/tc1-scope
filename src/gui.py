@@ -14,24 +14,36 @@ class TC1ScopeApp:
         self.frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED)
         self.frm_board = tk.Frame(width=610, height=500, borderwidth=3, relief=tk.RAISED)
         self.frm_board.pack_propagate(True)
-        self.frm_right = tk.Frame(master=self.frm_board)
+        self.frm_time = tk.Frame(master=self.frm_board)
+        self.frm_grid = tk.Frame(master=self.frm_board)
 
         # Initialize widgets
+        # Welcome
         self.ent_filename = tk.Entry(master=self.frm_welcome)
         self.lbl_file = tk.Label(text="Select file", master=self.frm_welcome)
         self.btn_browse = tk.Button(text="Browse", master=self.frm_welcome)
         self.btn_entry = tk.Button(text="Open", master=self.frm_welcome)
-
-        self.lbl_zoom = tk.Label(text="Time zoom", master=self.frm_right)
-        self.spb_zoom = tk.Spinbox(master=self.frm_right)
+        #Time
+        self.lbl_zoom = tk.Label(text="Time zoom", master=self.frm_time)
+        self.spb_zoom = tk.Spinbox(master=self.frm_time)
         self.spb_zoom.config(from_=1, to=100)
-
-        self.lbl_toffset = tk.Label(text="Time offset",master=self.frm_right)
-        self.lbl_coarseoffset = tk.Label(text="Coarse", master=self.frm_right)
-        self.scl_toffset = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
-        self.lbl_fineoffset = tk.Label(text="Fine", master=self.frm_right)
-        self.scl_toffsetfine = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
-        self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_right)
+        self.lbl_toffset = tk.Label(text="Time offset",master=self.frm_time)
+        self.lbl_coarseoffset = tk.Label(text="Coarse", master=self.frm_time)
+        self.scl_toffset = tk.Scale(master=self.frm_time, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
+        self.lbl_fineoffset = tk.Label(text="Fine", master=self.frm_time)
+        self.scl_toffsetfine = tk.Scale(master=self.frm_time, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
+        self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_time)
+        # Grid
+        self.lbl_gridx = tk.Label(text="X grid separation (s)", master=self.frm_grid)
+        self.spb_gridx = tk.Spinbox(master=self.frm_grid, state='readonly')
+        self.spb_gridx.config(values=['10n','25n','50n','100n','250n','500n',
+                                      '1u','5u','10u','25u','50u','100u','250u','500u',
+                                      '1m','5m','10m','25m','50m','100m','250m','500m','1'])
+        self.lbl_smalltime = tk.Label(text="Time tick too small!", fg="red", master=self.frm_grid)
+        self.lbl_gridy = tk.Label(text="Y grid separation (V)", master=self.frm_grid)
+        self.spb_gridy = tk.Spinbox(master=self.frm_grid, from_=0.5, to=10, increment=0.5)
+        self.spb_gridy.delete(0,tk.END)
+        self.spb_gridy.insert(0,1.0)
 
         # Pack the welcome screen widgets
         self.lbl_file.pack()
@@ -40,6 +52,7 @@ class TC1ScopeApp:
         self.btn_browse.pack()
 
         # Pack static main screen widgets
+        # Time
         self.lbl_zoom.pack()
         self.spb_zoom.pack()
         self.lbl_toffset.pack()
@@ -48,6 +61,12 @@ class TC1ScopeApp:
         self.lbl_fineoffset.pack()
         self.scl_toffsetfine.pack()
         self.btn_offsetzero.pack()
+        # Grid
+        self.lbl_gridx.pack()
+        self.spb_gridx.pack()
+        self.lbl_smalltime.pack()
+        self.lbl_gridy.pack()
+        self.spb_gridy.pack()
 
         # Bind events to buttons
         self.root.bind("<Return>", self.search_entry)
@@ -83,10 +102,12 @@ class TC1ScopeApp:
             self.scl_toffset.config(command=self.update_channels)
             self.scl_toffsetfine.config(command=self.update_channels)
             self.btn_offsetzero.bind("<Button-1>", self.reset_offset)
-            delta_t = self.data.highlimx - self.data.lowlimx
-            self.scl_toffset.config(from_=-delta_t, to=delta_t, resolution=delta_t/1000)
-            self.scl_toffsetfine.config(from_=-delta_t, to=delta_t, resolution=delta_t/1000)
-            self.frm_right.pack(side=tk.RIGHT)
+            self.scl_toffset.config(from_=-self.data.delta_t, to=self.data.delta_t, resolution=self.data.delta_t/1000)
+            self.scl_toffsetfine.config(from_=-self.data.delta_t, to=self.data.delta_t, resolution=self.data.delta_t/1000)
+            self.frm_time.pack(side=tk.RIGHT)
+            self.frm_grid.pack(side=tk.RIGHT)
+            self.spb_gridy.config(command=self.update_channels)
+            self.spb_gridx.config(command=self.update_channels)
             self.create_channels(self.data.n_channels)
             self.root.bind("<Return>", self.update_channels)
             self.root.title(f"TC1-SCOPE - {os.path.basename(filename)}")
@@ -98,10 +119,12 @@ class TC1ScopeApp:
         chan_offset = []
         chan_color = []
         chan_title = []
+        colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
 
-            lbl_channel = tk.Label(text=f"Channel {i + 1}", master=panel, fg="white", bg="blue")
+            ent_channel = tk.Entry(master=panel, fg="white")
+            ent_channel.insert(0,f"Channel {i + 1}")
             lbl_vdiv = tk.Label(text="V/div", master=panel)
             spb_vdiv = tk.Spinbox(from_=0.01, to=100, increment=0.1, master=panel)
             spb_vdiv.delete(0, tk.END)
@@ -115,7 +138,6 @@ class TC1ScopeApp:
             spb_offset.insert(0, "0.0")
 
             lbl_color = tk.Label(text="Color", master=panel)
-            colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
             cbb_color = ttk.Combobox(values=colors,
                                      state='readonly', master=panel)
             cbb_color.set(colors[i])
@@ -123,7 +145,7 @@ class TC1ScopeApp:
             cbb_color.bind("<<ComboboxSelected>>", self.update_channels)
 
             # Pack widgets
-            lbl_channel.pack()
+            ent_channel.pack()
             lbl_vdiv.pack()
             spb_vdiv.pack()
             lbl_offset.pack()
@@ -135,7 +157,7 @@ class TC1ScopeApp:
             chan_vdiv.append(spb_vdiv)
             chan_offset.append(spb_offset)
             chan_color.append(cbb_color)
-            chan_title.append(lbl_channel)
+            chan_title.append(ent_channel)
         self.chan_vdiv = chan_vdiv
         self.chan_offset = chan_offset
         self.chan_color = chan_color
@@ -158,7 +180,19 @@ class TC1ScopeApp:
             self.data.colors[i] = self.chan_color[i].get()
             self.chan_title[i].config(bg=self.chan_color[i].get())
         self.data.zoom = float(self.spb_zoom.get())
-        self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get()/50
+        self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get() / 50
+        self.data.gridy = float(self.spb_gridy.get())
+
+        unit_base, unit_exp = csv_plot.get_unit(self.spb_gridx.get())
+        ticks_sep = unit_base * unit_exp
+
+        if ((self.data.delta_t / ticks_sep) / self.data.zoom) <= 100:
+            self.data.gridx = self.spb_gridx.get()
+            self.lbl_smalltime.config(text="")
+        else:
+            self.lbl_smalltime.config(text="Time tick too small!")
+        
+
         self.data.updateplot()
 
 # Start the application
