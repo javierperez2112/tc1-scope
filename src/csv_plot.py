@@ -53,6 +53,11 @@ class PlotData:
         self.gridx = "1"
         self.plot.grid(True)
         self.plot.xaxis.set_tick_params(labelbottom=False)
+        self.showchannels = []
+        self.channel_names = []
+        for i in range(self.n_channels):
+            self.showchannels.append(True)
+            self.channel_names.append("")
         self.canvas = FigureCanvasTkAgg(fig, self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH)
         self.updateplot()
@@ -68,8 +73,12 @@ class PlotData:
         self.plot.xaxis.set_major_locator(MultipleLocator(gridx))
         self.plot.set_xlim([self.lowlimx / self.zoom, self.highlimx / self.zoom])
         for i in range(0, self.n_channels):
-            self.plot.plot((self.array[0] - self.toffset), 
-                           self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
+            if self.showchannels[i]:
+                self.plot.plot((self.array[0] - self.toffset), 
+                           self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i]
+                           , label=self.channel_names[i])
+                if self.channel_names[i] != "":
+                    leg = self.plot.legend() 
         self.plot.grid(True)
         self.canvas.draw()
 

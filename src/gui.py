@@ -10,10 +10,11 @@ class TC1ScopeApp:
         self.root.pack_propagate(True)
 
         # Initialize frames
+        self.pwindow = tk.PanedWindow(master=self.root)
         self.frm_screen = tk.Frame(width=610, height=410, bg="black", borderwidth=3, relief=tk.SUNKEN)
         self.frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED)
         self.frm_board = tk.Frame(width=610, height=500, borderwidth=3, relief=tk.RAISED)
-        self.frm_board.pack_propagate(True)
+        #self.frm_board.pack_propagate(True)
         self.frm_time = tk.Frame(master=self.frm_board)
         self.frm_grid = tk.Frame(master=self.frm_board)
 
@@ -119,11 +120,16 @@ class TC1ScopeApp:
         chan_offset = []
         chan_color = []
         chan_title = []
+        chan_check = []
         colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
 
-            ent_channel = tk.Entry(master=panel, fg="white")
+            frm_chk = tk.Frame(master=panel)
+            chk_var = tk.BooleanVar(value=True)
+            chk_channel = tk.Checkbutton(master=frm_chk, variable=chk_var, onvalue=True, offvalue=False)
+            chk_channel.config(command=self.update_channels)
+            ent_channel = tk.Entry(master=frm_chk, fg="white")
             ent_channel.insert(0,f"Channel {i + 1}")
             lbl_vdiv = tk.Label(text="V/div", master=panel)
             spb_vdiv = tk.Spinbox(from_=0.01, to=100, increment=0.1, master=panel)
@@ -145,7 +151,9 @@ class TC1ScopeApp:
             cbb_color.bind("<<ComboboxSelected>>", self.update_channels)
 
             # Pack widgets
-            ent_channel.pack()
+            chk_channel.pack(side=tk.LEFT)
+            ent_channel.pack(side=tk.LEFT)
+            frm_chk.pack()
             lbl_vdiv.pack()
             spb_vdiv.pack()
             lbl_offset.pack()
@@ -158,10 +166,12 @@ class TC1ScopeApp:
             chan_offset.append(spb_offset)
             chan_color.append(cbb_color)
             chan_title.append(ent_channel)
+            chan_check.append(chk_var)
         self.chan_vdiv = chan_vdiv
         self.chan_offset = chan_offset
         self.chan_color = chan_color
         self.chan_title = chan_title
+        self.chan_check = chan_check
         self.update_channels()
     
     def reset_offset(self, event):
@@ -178,6 +188,8 @@ class TC1ScopeApp:
             self.data.vdiv[i] = float(self.chan_vdiv[i].get())
             self.data.offset[i] = float(self.chan_offset[i].get())
             self.data.colors[i] = self.chan_color[i].get()
+            self.data.showchannels[i] = self.chan_check[i].get()
+            self.data.channel_names[i] = self.chan_title[i].get()
             self.chan_title[i].config(bg=self.chan_color[i].get())
         self.data.zoom = float(self.spb_zoom.get())
         self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get() / 50
