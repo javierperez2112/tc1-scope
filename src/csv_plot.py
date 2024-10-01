@@ -58,10 +58,10 @@ class PlotData:
 
     def updateplot(self, event=None):
         self.plot.clear()
-        self.plot.set_xlim([(self.lowlimx + self.zoom*self.toffset) / self.zoom, (self.highlimx + self.zoom*self.toffset) / self.zoom])
+        self.plot.set_xlim([self.lowlimx / self.zoom, self.highlimx / self.zoom])
         self.plot.yaxis.set_major_locator(MultipleLocator(1))
         for i in range(0, self.n_channels):
-            self.plot.plot((self.array[0]), self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
+            self.plot.plot((self.array[0] - self.toffset), self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
         self.plot.grid(True)
         self.canvas.draw()
 
