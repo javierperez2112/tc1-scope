@@ -1,7 +1,9 @@
+from matplotlib.ticker import MultipleLocator
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import tkinter as tk
+import re
 
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -28,11 +30,10 @@ class PlotData:
         self.offset = []
         self.colors = []
         self.n_channels = len(array) - 1
-        for i in range(self.n_channels):
-            self.colors.append('blue')
         self.array = array
         self.root = root
         for i in range(0, self.n_channels):
+            self.colors.append('blue')
             self.vdiv.append(1.0)
             self.offset.append(0.0)
     
@@ -41,7 +42,13 @@ class PlotData:
         for widget in self.root.winfo_children():
             widget.destroy()
         fig = plt.Figure()
+        self.zoom = 1
+        self.lowlimx = min(self.array[0])
+        self.highlimx = max(self.array[0])
+        self.toffset = 0.0
         self.plot = fig.add_subplot()
+        self.plot.set_xlim(self.lowlimx, self.highlimx)
+        self.plot.yaxis.set_major_locator(MultipleLocator(1))
         self.plot.grid(True)
         for i in range(0, self.n_channels):
             self.plot.plot(self.array[0], self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
@@ -51,10 +58,17 @@ class PlotData:
 
     def updateplot(self, event=None):
         self.plot.clear()
+        self.plot.set_xlim([(self.lowlimx + self.zoom*self.toffset) / self.zoom, (self.highlimx + self.zoom*self.toffset) / self.zoom])
+        self.plot.yaxis.set_major_locator(MultipleLocator(1))
         for i in range(0, self.n_channels):
-            self.plot.plot(self.array[0], self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
+            self.plot.plot((self.array[0]), self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i])
         self.plot.grid(True)
         self.canvas.draw()
 
 
-
+unit_multipliers = {
+    'n': 1e-9,  # nano
+    'u': 1e-6,  # micro
+    'm': 1e-3,  # milli
+    's': 1,      # one
+}

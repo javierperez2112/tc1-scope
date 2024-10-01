@@ -14,19 +14,40 @@ class TC1ScopeApp:
         self.frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED)
         self.frm_board = tk.Frame(width=610, height=500, borderwidth=3, relief=tk.RAISED)
         self.frm_board.pack_propagate(True)
+        self.frm_right = tk.Frame(master=self.frm_board)
 
         # Initialize widgets
         self.ent_filename = tk.Entry(master=self.frm_welcome)
         self.lbl_file = tk.Label(text="Select file", master=self.frm_welcome)
         self.btn_browse = tk.Button(text="Browse", master=self.frm_welcome)
         self.btn_entry = tk.Button(text="Open", master=self.frm_welcome)
-        self.btn_update = tk.Button(text="Update", master=self.frm_board)
+
+        self.lbl_zoom = tk.Label(text="Time zoom", master=self.frm_right)
+        self.spb_zoom = tk.Spinbox(master=self.frm_right)
+        self.spb_zoom.config(from_=1, to=100)
+
+        self.lbl_toffset = tk.Label(text="Time offset",master=self.frm_right)
+        self.lbl_coarseoffset = tk.Label(text="Coarse", master=self.frm_right)
+        self.scl_toffset = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False)
+        self.lbl_fineoffset = tk.Label(text="Fine", master=self.frm_right)
+        self.scl_toffsetfine = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False)
+        self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_right)
 
         # Pack the welcome screen widgets
         self.lbl_file.pack()
         self.ent_filename.pack()
         self.btn_entry.pack()
         self.btn_browse.pack()
+
+        # Pack static main screen widgets
+        self.lbl_zoom.pack()
+        self.spb_zoom.pack()
+        self.lbl_toffset.pack()
+        self.lbl_coarseoffset.pack()
+        self.scl_toffset.pack()
+        self.lbl_fineoffset.pack()
+        self.scl_toffsetfine.pack()
+        self.btn_offsetzero.pack()
 
         # Bind events to buttons
         self.root.bind("<Return>", self.search_entry)
@@ -55,16 +76,19 @@ class TC1ScopeApp:
             self.frm_welcome.destroy()
             self.frm_board.pack(fill=tk.BOTH)
             self.root.resizable(width=True, height=True)
-
             # Initialize the data and create channel controls
             self.data = csv_plot.PlotData(array, self.frm_screen)
             self.data.makeplot()
+            self.spb_zoom.config(command=self.update_channels)
+            self.scl_toffset.config(command=self.update_channels)
+            self.scl_toffsetfine.config(command=self.update_channels)
+            self.btn_offsetzero.bind("<Button-1>", self.reset_offset)
+            delta_t = self.data.highlimx - self.data.lowlimx
+            self.scl_toffset.config(from_=-delta_t, to=delta_t, resolution=-1)
+            self.scl_toffsetfine.config(from_=-delta_t, to=delta_t, resolution=-1)
+            self.frm_right.pack(side=tk.RIGHT)
             self.create_channels(self.data.n_channels)
             self.root.bind("<Return>", self.update_channels)
-            
-            # Set update button action
-            self.btn_update.config(command=self.update_channels)
-            self.btn_update.pack(side=tk.RIGHT)
             self.root.title(f"TC1-SCOPE - {os.path.basename(filename)}")
         else:
             self.lbl_file.config(text="File not found or unable to open.")
@@ -73,11 +97,13 @@ class TC1ScopeApp:
         chan_vdiv = []
         chan_offset = []
         chan_color = []
+        chan_title = []
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
 
-            lbl_channel = tk.Label(text=f"Channel {i + 1}\nV/div", master=panel)
-            spb_vdiv = tk.Spinbox(from_=0.1, to=100, increment=0.1, master=panel)
+            lbl_channel = tk.Label(text=f"Channel {i + 1}", master=panel, fg="white", bg="blue")
+            lbl_vdiv = tk.Label(text="V/div", master=panel)
+            spb_vdiv = tk.Spinbox(from_=0.01, to=100, increment=0.1, master=panel)
             spb_vdiv.delete(0, tk.END)
             spb_vdiv.insert(0, "1.0")
             spb_vdiv.config(command=self.update_channels)
@@ -89,13 +115,14 @@ class TC1ScopeApp:
             spb_offset.insert(0, "0.0")
 
             lbl_color = tk.Label(text="Color", master=panel)
-            cbb_color = ttk.Combobox(values=["blue", "green", "red", "cyan", "magenta", "orange", "black", "white"],
+            cbb_color = ttk.Combobox(values=["blue", "green", "red", "gold", "magenta", "orange", "black", "purple"],
                                      state='readonly', master=panel)
             cbb_color.set("blue")
             cbb_color.bind("<<ComboboxSelected>>", self.update_channels)
 
             # Pack widgets
             lbl_channel.pack()
+            lbl_vdiv.pack()
             spb_vdiv.pack()
             lbl_offset.pack()
             spb_offset.pack()
@@ -106,15 +133,29 @@ class TC1ScopeApp:
             chan_vdiv.append(spb_vdiv)
             chan_offset.append(spb_offset)
             chan_color.append(cbb_color)
+            chan_title.append(lbl_channel)
         self.chan_vdiv = chan_vdiv
         self.chan_offset = chan_offset
         self.chan_color = chan_color
+        self.chan_title = chan_title
+    
+    def reset_offset(self, event):
+        self.scl_toffset.set(0)
+        self.scl_toffsetfine.set(0)
 
     def update_channels(self, event=0):
         for i in range(self.data.n_channels):
+            if float(self.chan_vdiv[i].get()) <= 0.1:
+                self.chan_vdiv[i].config(increment=0.01)
+            else:
+                self.chan_vdiv[i].config(increment=0.1)
+
             self.data.vdiv[i] = float(self.chan_vdiv[i].get())
             self.data.offset[i] = float(self.chan_offset[i].get())
             self.data.colors[i] = self.chan_color[i].get()
+            self.chan_title[i].config(bg=self.chan_color[i].get())
+        self.data.zoom = float(self.spb_zoom.get())
+        self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get()/50
         self.data.updateplot()
 
 # Start the application
