@@ -28,9 +28,9 @@ class TC1ScopeApp:
 
         self.lbl_toffset = tk.Label(text="Time offset",master=self.frm_right)
         self.lbl_coarseoffset = tk.Label(text="Coarse", master=self.frm_right)
-        self.scl_toffset = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False)
+        self.scl_toffset = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
         self.lbl_fineoffset = tk.Label(text="Fine", master=self.frm_right)
-        self.scl_toffsetfine = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False)
+        self.scl_toffsetfine = tk.Scale(master=self.frm_right, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
         self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_right)
 
         # Pack the welcome screen widgets
@@ -84,8 +84,8 @@ class TC1ScopeApp:
             self.scl_toffsetfine.config(command=self.update_channels)
             self.btn_offsetzero.bind("<Button-1>", self.reset_offset)
             delta_t = self.data.highlimx - self.data.lowlimx
-            self.scl_toffset.config(from_=-delta_t, to=delta_t, resolution=-1)
-            self.scl_toffsetfine.config(from_=-delta_t, to=delta_t, resolution=-1)
+            self.scl_toffset.config(from_=-delta_t, to=delta_t, resolution=delta_t/1000)
+            self.scl_toffsetfine.config(from_=-delta_t, to=delta_t, resolution=delta_t/1000)
             self.frm_right.pack(side=tk.RIGHT)
             self.create_channels(self.data.n_channels)
             self.root.bind("<Return>", self.update_channels)
@@ -115,9 +115,11 @@ class TC1ScopeApp:
             spb_offset.insert(0, "0.0")
 
             lbl_color = tk.Label(text="Color", master=panel)
-            cbb_color = ttk.Combobox(values=["blue", "green", "red", "gold", "magenta", "orange", "black", "purple"],
+            colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
+            cbb_color = ttk.Combobox(values=colors,
                                      state='readonly', master=panel)
-            cbb_color.set("blue")
+            cbb_color.set(colors[i])
+            #cbb_color.set("blue")
             cbb_color.bind("<<ComboboxSelected>>", self.update_channels)
 
             # Pack widgets
@@ -138,6 +140,7 @@ class TC1ScopeApp:
         self.chan_offset = chan_offset
         self.chan_color = chan_color
         self.chan_title = chan_title
+        self.update_channels()
     
     def reset_offset(self, event):
         self.scl_toffset.set(0)
