@@ -19,9 +19,9 @@ def openfile(filename: str) -> {bool, np.array}:
     except:
         return (False, None)
     # Eliminar columnas no numéricas, ONE LINER INCOMING!!!!!
-    #dataframe = dataframe.apply(pd.to_numeric, errors='coerce').dropna(axis=1)
+    dataframe = dataframe.transpose().apply(pd.to_numeric, errors='coerce').dropna(axis=1).transpose()
     array = dataframe.to_numpy().transpose()
-    #print(dataframe)    # Debug
+    print(dataframe)    # Debug
     return (True, array)
     
 class PlotData:
@@ -55,9 +55,12 @@ class PlotData:
         self.plot.xaxis.set_tick_params(labelbottom=False)
         self.showchannels = []
         self.channel_names = []
+        self.title = ""
+        self.xtitle = ""
+        self.ytitle = ""
         for i in range(self.n_channels):
             self.showchannels.append(True)
-            self.channel_names.append("")
+            self.channel_names.append(self.array[i][1])
         self.canvas = FigureCanvasTkAgg(fig, self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH)
         self.updateplot()
@@ -72,6 +75,9 @@ class PlotData:
         self.plot.yaxis.set_major_locator(MultipleLocator(self.gridy))
         self.plot.xaxis.set_major_locator(MultipleLocator(gridx))
         self.plot.set_xlim([self.lowlimx / self.zoom, self.highlimx / self.zoom])
+        self.plot.set_title(self.title)
+        self.plot.set_xlabel(self.xtitle)
+        self.plot.set_ylabel(self.ytitle)
         for i in range(0, self.n_channels):
             if self.showchannels[i]:
                 self.plot.plot((self.array[0] - self.toffset), 

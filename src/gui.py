@@ -15,6 +15,7 @@ class TC1ScopeApp:
         self.frm_welcome = tk.Frame(borderwidth=3, relief=tk.RAISED)
         self.frm_board = tk.Frame(width=610, height=500, borderwidth=3, relief=tk.RAISED)
         #self.frm_board.pack_propagate(True)
+        self.frm_titles = tk.Frame(master=self.frm_board)
         self.frm_time = tk.Frame(master=self.frm_board)
         self.frm_grid = tk.Frame(master=self.frm_board)
 
@@ -34,6 +35,13 @@ class TC1ScopeApp:
         self.lbl_fineoffset = tk.Label(text="Fine", master=self.frm_time)
         self.scl_toffsetfine = tk.Scale(master=self.frm_time, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
         self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_time)
+        #Titles
+        self.lbl_title = tk.Label(text="Title", master=self.frm_titles)
+        self.ent_title = tk.Entry(master=self.frm_titles)
+        self.lbl_xtitle = tk.Label(text="X axis title", master=self.frm_titles)
+        self.ent_xtitle = tk.Entry(master=self.frm_titles)
+        self.lbl_ytitle = tk.Label(text="Y axis title", master=self.frm_titles)
+        self.ent_ytitle = tk.Entry(master=self.frm_titles)
         # Grid
         self.lbl_gridx = tk.Label(text="X grid separation (s)", master=self.frm_grid)
         self.spb_gridx = tk.Spinbox(master=self.frm_grid, state='readonly')
@@ -62,6 +70,13 @@ class TC1ScopeApp:
         self.lbl_fineoffset.pack()
         self.scl_toffsetfine.pack()
         self.btn_offsetzero.pack()
+        # Titles
+        self.lbl_title.pack()
+        self.ent_title.pack()
+        self.lbl_xtitle.pack()
+        self.ent_xtitle.pack()
+        self.lbl_ytitle.pack()
+        self.ent_ytitle.pack()
         # Grid
         self.lbl_gridx.pack()
         self.spb_gridx.pack()
@@ -107,6 +122,7 @@ class TC1ScopeApp:
             self.scl_toffsetfine.config(from_=-self.data.delta_t, to=self.data.delta_t, resolution=self.data.delta_t/1000)
             self.frm_time.pack(side=tk.RIGHT, expand=tk.YES)
             self.frm_grid.pack(side=tk.RIGHT, expand=tk.YES)
+            self.frm_titles.pack(side=tk.RIGHT, expand=tk.YES)
             self.spb_gridy.config(command=self.update_channels)
             self.spb_gridx.config(command=self.update_channels)
             self.create_channels(self.data.n_channels)
@@ -194,6 +210,9 @@ class TC1ScopeApp:
         self.data.zoom = float(self.spb_zoom.get())
         self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get() / 50
         self.data.gridy = float(self.spb_gridy.get())
+        self.data.title = self.ent_title.get()
+        self.data.xtitle = self.ent_xtitle.get()
+        self.data.ytitle = self.ent_ytitle.get()
 
         unit_base, unit_exp = csv_plot.get_unit(self.spb_gridx.get())
         ticks_sep = unit_base * unit_exp
