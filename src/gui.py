@@ -43,12 +43,21 @@ class TC1ScopeApp:
         self.ent_xtitle = tk.Entry(master=self.frm_titles)
         self.lbl_ytitle = tk.Label(text="Y axis title", master=self.frm_titles)
         self.ent_ytitle = tk.Entry(master=self.frm_titles)
+        self.xunits = tk.BooleanVar(value=False)
+        self.chk_xunits = tk.Checkbutton(text="X units", master=self.frm_titles, onvalue=True, offvalue=False, variable=self.xunits)
+        self.chk_xunits.config(command=self.update_channels)
+        self.yunits = tk.BooleanVar(value=False)
+        self.chk_yunits = tk.Checkbutton(text="Y units", master=self.frm_titles, onvalue=True, offvalue=False, variable=self.yunits)
+        self.chk_yunits.config(command=self.update_channels)
+        self.xymode = tk.BooleanVar(value=False)
+        self.chk_xymode = tk.Checkbutton(text="XY mode", master=self.frm_titles, onvalue=True, offvalue=False, variable=self.xymode)
+        self.chk_xymode.config(command=self.update_channels)
         # Grid
         self.lbl_gridx = tk.Label(text="X grid separation (s)", master=self.frm_grid)
         self.spb_gridx = tk.Spinbox(master=self.frm_grid, state='readonly')
         gridx_values = ['10n','25n','50n','100n','250n','500n',
                         '1u','5u','10u','25u','50u','100u','250u','500u',
-                        '1m','5m','10m','25m','50m','100m','250m','500m','1','5','10','25']
+                        '1m','5m','10m','25m','50m','100m','250m','500m','1','5','10']
 
         self.spb_gridx.config(values=gridx_values)
         self.lbl_smalltime = tk.Label(text="Time tick too small!", fg="red", master=self.frm_grid)
@@ -89,6 +98,8 @@ class TC1ScopeApp:
         self.ent_xtitle.pack()
         self.lbl_ytitle.pack()
         self.ent_ytitle.pack()
+        self.chk_xunits.pack()
+        self.chk_yunits.pack()
         # Grid
         self.lbl_gridx.pack()
         self.spb_gridx.pack()
@@ -160,6 +171,8 @@ class TC1ScopeApp:
         chan_cursor2 = []
         chan_cursorinfo = []
         colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
+        if n_channels == 2:
+            self.chk_xymode.pack()
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
 
@@ -264,7 +277,7 @@ class TC1ScopeApp:
             self.data.cursor1[i] = float(self.chan_cursor1[i].get())
             self.data.cursor2[i] = float(self.chan_cursor2[i].get())
         self.data.zoom = float(self.spb_zoom.get())
-        self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get() / 50
+        self.data.toffset = (self.scl_toffset.get() + self.scl_toffsetfine.get() / 50)*self.data.zoom ###
         self.data.gridy = float(self.spb_gridy.get())
         self.data.title = self.ent_title.get()
         self.data.xtitle = self.ent_xtitle.get()
@@ -284,10 +297,25 @@ class TC1ScopeApp:
             self.data.gridx = "100000"
             self.lbl_smalltime.config(text="Time tick too small!")
         
+        self.data.xymode = self.xymode.get()
+        
 
+        unit = self.data.gridx[-1]
+        if unit.isnumeric():
+            unit = ""
+        if self.xunits.get() == True:
+            if not self.xymode.get():
+                self.data.xtitle = self.ent_xtitle.get() + f" ({unit}s)"
+            else:
+                self.data.xtitle = self.ent_xtitle.get() + f" ({unit}V)"
+            
+        if self.yunits.get() == True:
+            self.data.ytitle = self.ent_ytitle.get() + " (V)"
         self.data.updateplot()
-        self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} s\nT2 = {round(self.data.tcursor2_t,7)} s\n" + 
-                             f"ΔT = {round(self.data.tcursor_delta,7)} s")
+        if (unit.isalpha() == False):
+            unit=''
+        self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} {unit}s\nT2 = {round(self.data.tcursor2_t,7)} {unit}s\n" + 
+                             f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s")
         for i in range(self.data.n_channels):
             self.chan_cursorinfo[i].set(f"V1 = {round(self.data.cursor1_v[i], 5)} V\nV2 = {round(self.data.cursor2_v[i], 5)} V\n" +
                                         f"ΔV = {round(self.data.cursor_delta[i], 5)} V")

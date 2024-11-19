@@ -57,7 +57,7 @@ class PlotData:
         self.gridy = 1
         self.gridx = "1"
         self.plot.grid(True)
-        self.plot.xaxis.set_tick_params(labelbottom=False)
+        self.plot.xaxis.set_tick_params(labelbottom=True) ###
         self.showchannels = []
         self.channel_names = []
         self.cursor_chk = []
@@ -72,6 +72,7 @@ class PlotData:
         self.title = ""
         self.xtitle = ""
         self.ytitle = ""
+        self.xymode = False
         for i in range(self.n_channels):
             self.showchannels.append(True)
             self.channel_names.append(self.array[i][1])
@@ -90,32 +91,38 @@ class PlotData:
 
         (gridx_base, gridx_exp) = get_unit(self.gridx)
         gridx = gridx_base * gridx_exp
+  
+        #print(gridx_base, gridx_exp)
         #print(gridx_base * gridx_exp)  # Debug
         self.plot.yaxis.set_major_locator(MultipleLocator(self.gridy))
-        self.plot.xaxis.set_major_locator(MultipleLocator(gridx))
-        self.plot.set_xlim([self.lowlimx / self.zoom, self.highlimx / self.zoom])
+        self.plot.xaxis.set_major_locator(MultipleLocator(gridx_base))
+        
         self.plot.set_title(self.title)
         self.plot.set_xlabel(self.xtitle)
         self.plot.set_ylabel(self.ytitle)
-        for i in range(0, self.n_channels):
-            if self.showchannels[i]:
-                self.plot.plot((self.array[0] - self.toffset), 
-                           self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i]
-                           , label=self.channel_names[i])
-                if self.cursor_chk[i] == True:
-                    self.cursor1_v[i] = self.offset[i] + (1/self.vdiv[i]) * (self.min[i] + self.delta_y[i] * self.cursor1[i])
-                    self.cursor2_v[i] = self.offset[i] + (1/self.vdiv[i]) * (self.min[i] + self.delta_y[i] * self.cursor2[i])
-                    self.plot.axhline(y=self.cursor1_v[i], color=self.colors[i], linestyle=':')
-                    self.plot.axhline(y=self.cursor2_v[i], color=self.colors[i], linestyle='--')
-                    self.cursor_delta[i] = self.cursor1_v[i] - self.cursor2_v[i]
-                if self.channel_names[i] != "":
-                    self.plot.legend() 
-        if self.tcursor_chk == True:
-            self.tcursor1_t = (self.lowlimx + self.toffset + self.delta_t * self.tcursor1) / self.zoom
-            self.tcursor2_t = (self.lowlimx + self.toffset +  self.delta_t * self.tcursor2) / self.zoom
-            self.tcursor_delta = self.tcursor1_t - self.tcursor2_t
-            self.plot.axvline(x=self.tcursor1_t, linestyle=':', color='black')
-            self.plot.axvline(x=self.tcursor2_t, linestyle='--', color='black')
+        if self.xymode == True:
+            self.plot.plot(self.array[1], self.array[2], self.colors[0])
+        else:
+            self.plot.set_xlim([(self.lowlimx- self.toffset)*(1/gridx_exp) / self.zoom, (self.highlimx- self.toffset)*(1/gridx_exp) / self.zoom]) ###
+            for i in range(0, self.n_channels):
+                if self.showchannels[i]:
+                    self.plot.plot(self.array[0]*(1/gridx_exp), 
+                            self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i]
+                            , label=self.channel_names[i])
+                    if self.cursor_chk[i] == True:
+                        self.cursor1_v[i] = (self.min[i] + self.delta_y[i] * self.cursor1[i])
+                        self.cursor2_v[i] = (self.min[i] + self.delta_y[i] * self.cursor2[i])
+                        self.plot.axhline(y=self.offset[i] + self.cursor1_v[i], color=self.colors[i], linestyle=':')
+                        self.plot.axhline(y=self.offset[i] + self.cursor2_v[i], color=self.colors[i], linestyle='--')
+                        self.cursor_delta[i] = self.cursor1_v[i] - self.cursor2_v[i]
+                    if self.channel_names[i] != "":
+                        self.plot.legend() 
+            if self.tcursor_chk == True:
+                self.tcursor1_t = (self.lowlimx / self.zoom + self.delta_t * self.tcursor1 / self.zoom)*(1/gridx_exp)  ###
+                self.tcursor2_t = (self.lowlimx / self.zoom + self.delta_t * self.tcursor2 / self.zoom)*(1/gridx_exp)  ###
+                self.tcursor_delta = self.tcursor1_t - self.tcursor2_t
+                self.plot.axvline(x=self.tcursor1_t, linestyle=':', color='black')
+                self.plot.axvline(x=self.tcursor2_t, linestyle='--', color='black')
         self.plot.grid(True)
         self.canvas.draw()
 
