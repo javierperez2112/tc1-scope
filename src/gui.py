@@ -18,6 +18,7 @@ class TC1ScopeApp:
         self.frm_titles = tk.Frame(master=self.frm_board)
         self.frm_time = tk.Frame(master=self.frm_board)
         self.frm_grid = tk.Frame(master=self.frm_board)
+        self.frm_cursor = tk.Frame(master=self.frm_board)
 
         # Initialize widgets
         # Welcome
@@ -55,6 +56,15 @@ class TC1ScopeApp:
         self.spb_gridy = tk.Spinbox(master=self.frm_grid, from_=0.5, to=10, increment=0.5)
         self.spb_gridy.delete(0,tk.END)
         self.spb_gridy.insert(0,1.0)
+        self.tcursor = tk.BooleanVar(value=False)
+        self.chk_tcursor = tk.Checkbutton(master=self.frm_grid, text="Time cursor", variable=self.tcursor, onvalue=True, offvalue=False)
+        self.chk_tcursor.config(command=self.update_channels)
+        self.scl_tcursor1 = tk.Scale(master=self.frm_grid, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, showvalue=0)
+        self.scl_tcursor1.config(command=self.update_channels)
+        self.scl_tcursor2 = tk.Scale(master=self.frm_grid, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, showvalue=0)
+        self.scl_tcursor2.config(command=self.update_channels)
+        self.tcursor_info = tk.StringVar()
+        self.lbl_tcursor = tk.Label(master=self.frm_grid, textvariable=self.tcursor_info)
 
         # Pack the welcome screen widgets
         self.lbl_file.pack()
@@ -85,6 +95,10 @@ class TC1ScopeApp:
         self.lbl_smalltime.pack()
         self.lbl_gridy.pack()
         self.spb_gridy.pack()
+        self.chk_tcursor.pack()
+        self.scl_tcursor1.pack()
+        self.scl_tcursor2.pack()
+        self.lbl_tcursor.pack()
 
         # Bind events to buttons
         self.root.bind("<Return>", self.search_entry)
@@ -125,11 +139,13 @@ class TC1ScopeApp:
             self.frm_time.pack(side=tk.RIGHT, expand=tk.YES)
             self.frm_grid.pack(side=tk.RIGHT, expand=tk.YES)
             self.frm_titles.pack(side=tk.RIGHT, expand=tk.YES)
+            self.frm_cursor.pack(side=tk.BOTTOM, expand=tk.YES)
             self.spb_gridy.config(command=self.update_channels)
             self.spb_gridx.config(command=self.update_channels)
             self.create_channels(self.data.n_channels)
             self.root.bind("<Return>", self.update_channels)
             self.root.title(f"TC1-SCOPE - {os.path.basename(filename)}")
+
         else:
             self.lbl_file.config(text="File not found or unable to open.")
 
@@ -139,6 +155,10 @@ class TC1ScopeApp:
         chan_color = []
         chan_title = []
         chan_check = []
+        chan_cursor_chk = []
+        chan_cursor1 = []
+        chan_cursor2 = []
+        chan_cursorinfo = []
         colors = ["blue", "red", "green", "gold", "magenta", "orange", "black", "purple"]
         for i in range(n_channels):
             panel = tk.Frame(master=self.frm_board)
@@ -168,6 +188,20 @@ class TC1ScopeApp:
             #cbb_color.set("blue")
             cbb_color.bind("<<ComboboxSelected>>", self.update_channels)
 
+            cursor_var = tk.BooleanVar(value=False)
+            chk_cursor = tk.Checkbutton(text=f"Cursor {i+1}", master=panel, variable=cursor_var, onvalue=True, offvalue=False)
+            chk_cursor.config(command=self.update_channels)
+            spb_cursor1 = tk.Scale(master=panel, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, showvalue=0)
+            spb_cursor1.config(command=self.update_channels)
+            #spb_cursor1.delete(0,tk.END)
+            #spb_cursor1.insert(0,0.0)
+            spb_cursor2 = tk.Scale(master=panel, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, showvalue=0)
+            spb_cursor2.config(command=self.update_channels)
+            #spb_cursor2.delete(0,tk.END)
+            #spb_cursor2.insert(0,0.0)
+            stringvar = tk.StringVar()
+            lbl_cursor = tk.Label(textvariable=stringvar, master=panel)
+
             # Pack widgets
             chk_channel.pack(side=tk.LEFT)
             ent_channel.pack(side=tk.LEFT)
@@ -178,6 +212,10 @@ class TC1ScopeApp:
             spb_offset.pack()
             lbl_color.pack()
             cbb_color.pack()
+            chk_cursor.pack()
+            spb_cursor1.pack()
+            spb_cursor2.pack()
+            lbl_cursor.pack()
             panel.pack(side=tk.LEFT, expand=tk.YES)
 
             chan_vdiv.append(spb_vdiv)
@@ -185,11 +223,24 @@ class TC1ScopeApp:
             chan_color.append(cbb_color)
             chan_title.append(ent_channel)
             chan_check.append(chk_var)
+            chan_cursor_chk.append(cursor_var)
+            chan_cursor1.append(spb_cursor1)
+            chan_cursor2.append(spb_cursor2)
+            chan_cursorinfo.append(stringvar)
+            self.data.cursor_chk.append(None)
+            self.data.cursor1.append(0.0)
+            self.data.cursor2.append(0.0)
         self.chan_vdiv = chan_vdiv
         self.chan_offset = chan_offset
         self.chan_color = chan_color
         self.chan_title = chan_title
         self.chan_check = chan_check
+        self.chan_cursor_chk = chan_cursor_chk
+        self.chan_cursor1 = chan_cursor1
+        self.chan_cursor2 = chan_cursor2
+        self.chan_cursorinfo = chan_cursorinfo
+        #self.spb_cursorx1.config(from_=0, to=self.data.delta_t, increment=self.data.delta_t/1000.0)
+        #self.spb_cursorx2.config(from_=0, to=self.data.delta_t, increment=self.data.delta_t/1000.0)
         self.update_channels()
     
     def reset_offset(self, event):
@@ -209,12 +260,19 @@ class TC1ScopeApp:
             self.data.showchannels[i] = self.chan_check[i].get()
             self.data.channel_names[i] = self.chan_title[i].get()
             self.chan_title[i].config(bg=self.chan_color[i].get())
+            self.data.cursor_chk[i] = self.chan_cursor_chk[i].get()
+            self.data.cursor1[i] = float(self.chan_cursor1[i].get())
+            self.data.cursor2[i] = float(self.chan_cursor2[i].get())
         self.data.zoom = float(self.spb_zoom.get())
         self.data.toffset = self.scl_toffset.get() + self.scl_toffsetfine.get() / 50
         self.data.gridy = float(self.spb_gridy.get())
         self.data.title = self.ent_title.get()
         self.data.xtitle = self.ent_xtitle.get()
         self.data.ytitle = self.ent_ytitle.get()
+        
+        self.data.tcursor_chk = self.tcursor.get()
+        self.data.tcursor1 = float(self.scl_tcursor1.get())
+        self.data.tcursor2 = float(self.scl_tcursor2.get())
 
         unit_base, unit_exp = csv_plot.get_unit(self.spb_gridx.get())
         ticks_sep = unit_base * unit_exp
@@ -228,6 +286,11 @@ class TC1ScopeApp:
         
 
         self.data.updateplot()
+        self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} s\nT2 = {round(self.data.tcursor2_t,7)} s\n" + 
+                             f"ΔT = {round(self.data.tcursor_delta,7)} s")
+        for i in range(self.data.n_channels):
+            self.chan_cursorinfo[i].set(f"V1 = {round(self.data.cursor1_v[i], 5)} V\nV2 = {round(self.data.cursor2_v[i], 5)} V\n" +
+                                        f"ΔV = {round(self.data.cursor_delta[i], 5)} V")
 
 # Start the application
 if __name__ == "__main__":

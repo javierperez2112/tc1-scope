@@ -21,7 +21,7 @@ def openfile(filename: str) -> {bool, np.array}:
     # Eliminar columnas no numéricas, ONE LINER INCOMING!!!!!
     dataframe = dataframe.transpose().apply(pd.to_numeric, errors='coerce').dropna(axis=1).transpose()
     array = dataframe.to_numpy().transpose()
-    print(dataframe)    # Debug
+    #print(dataframe)    # Debug
     return (True, array)
     
 class PlotData:
@@ -46,6 +46,11 @@ class PlotData:
         self.lowlimx = min(self.array[0])
         self.highlimx = max(self.array[0])
         self.delta_t = self.highlimx - self.lowlimx
+        self.delta_y = []
+        self.cursor_delta = []
+        self.cursor1_v = []
+        self.cursor2_v = []
+        self.min = []
         self.toffset = 0.0
         self.plot = fig.add_subplot()
         self.plot.set_xlim(self.lowlimx, self.highlimx)
@@ -55,15 +60,29 @@ class PlotData:
         self.plot.xaxis.set_tick_params(labelbottom=False)
         self.showchannels = []
         self.channel_names = []
+        self.cursor_chk = []
+        self.cursor1 = []
+        self.cursor2 = []
+        self.tcursor1 = 0.0
+        self.tcursor2 = 0.0
+        self.tcursor_chk = False
+        self.tcursor1_t = 0.0
+        self.tcursor2_t = 0.0
+        self.tcursor_delta = 0.0
         self.title = ""
         self.xtitle = ""
         self.ytitle = ""
         for i in range(self.n_channels):
             self.showchannels.append(True)
             self.channel_names.append(self.array[i][1])
+            self.min.append(min(self.array[i+1]))
+            self.delta_y.append(max(self.array[i+1]) - self.min[i])
+            self.cursor_delta.append(0.0)
+            self.cursor1_v.append(0.0)
+            self.cursor2_v.append(0.0)
         self.canvas = FigureCanvasTkAgg(fig, self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH)
-        self.updateplot()
+        #self.updateplot()
         #print(self.root.winfo_children())   # Debug
 
     def updateplot(self, event=None):
@@ -83,8 +102,20 @@ class PlotData:
                 self.plot.plot((self.array[0] - self.toffset), 
                            self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i]
                            , label=self.channel_names[i])
+                if self.cursor_chk[i] == True:
+                    self.cursor1_v[i] = self.offset[i] + (1/self.vdiv[i]) * (self.min[i] + self.delta_y[i] * self.cursor1[i])
+                    self.cursor2_v[i] = self.offset[i] + (1/self.vdiv[i]) * (self.min[i] + self.delta_y[i] * self.cursor2[i])
+                    self.plot.axhline(y=self.cursor1_v[i], color=self.colors[i], linestyle=':')
+                    self.plot.axhline(y=self.cursor2_v[i], color=self.colors[i], linestyle='--')
+                    self.cursor_delta[i] = self.cursor1_v[i] - self.cursor2_v[i]
                 if self.channel_names[i] != "":
-                    leg = self.plot.legend() 
+                    self.plot.legend() 
+        if self.tcursor_chk == True:
+            self.tcursor1_t = (self.lowlimx + self.toffset + self.delta_t * self.tcursor1) / self.zoom
+            self.tcursor2_t = (self.lowlimx + self.toffset +  self.delta_t * self.tcursor2) / self.zoom
+            self.tcursor_delta = self.tcursor1_t - self.tcursor2_t
+            self.plot.axvline(x=self.tcursor1_t, linestyle=':', color='black')
+            self.plot.axvline(x=self.tcursor2_t, linestyle='--', color='black')
         self.plot.grid(True)
         self.canvas.draw()
 
