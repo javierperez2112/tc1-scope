@@ -45,9 +45,11 @@ class TC1ScopeApp:
         # Grid
         self.lbl_gridx = tk.Label(text="X grid separation (s)", master=self.frm_grid)
         self.spb_gridx = tk.Spinbox(master=self.frm_grid, state='readonly')
-        self.spb_gridx.config(values=['10n','25n','50n','100n','250n','500n',
-                                      '1u','5u','10u','25u','50u','100u','250u','500u',
-                                      '1m','5m','10m','25m','50m','100m','250m','500m','1'])
+        gridx_values = ['10n','25n','50n','100n','250n','500n',
+                        '1u','5u','10u','25u','50u','100u','250u','500u',
+                        '1m','5m','10m','25m','50m','100m','250m','500m','1','5','10','25']
+
+        self.spb_gridx.config(values=gridx_values)
         self.lbl_smalltime = tk.Label(text="Time tick too small!", fg="red", master=self.frm_grid)
         self.lbl_gridy = tk.Label(text="Y grid separation (V)", master=self.frm_grid)
         self.spb_gridy = tk.Spinbox(master=self.frm_grid, from_=0.5, to=10, increment=0.5)
@@ -221,6 +223,7 @@ class TC1ScopeApp:
             self.data.gridx = self.spb_gridx.get()
             self.lbl_smalltime.config(text="")
         else:
+            self.data.gridx = "100000"
             self.lbl_smalltime.config(text="Time tick too small!")
         
 
