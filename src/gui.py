@@ -3,6 +3,13 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 import csv_plot
 
+unit_inverses = {
+    '' : '',
+    'm' : 'k',
+    'u' : 'M',
+    'n' : 'G'
+}
+
 class TC1ScopeApp:
     def __init__(self, root):
         self.root = root
@@ -303,6 +310,7 @@ class TC1ScopeApp:
         unit = self.data.gridx[-1]
         if unit.isnumeric():
             unit = ""
+        funit = unit_inverses[unit]
         if self.xunits.get() == True:
             if not self.xymode.get():
                 self.data.xtitle = self.ent_xtitle.get() + f" ({unit}s)"
@@ -311,11 +319,19 @@ class TC1ScopeApp:
             
         if self.yunits.get() == True:
             self.data.ytitle = self.ent_ytitle.get() + " (V)"
+        
         self.data.updateplot()
         if (unit.isalpha() == False):
             unit=''
-        self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} {unit}s\nT2 = {round(self.data.tcursor2_t,7)} {unit}s\n" + 
-                             f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s")
+        if self.data.tcursor_delta != 0.0:
+            self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} {unit}s\nT2 = {round(self.data.tcursor2_t,7)} {unit}s\n" + 
+                                f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s\n" +
+                                f"1/ΔT = {abs(round(1 / self.data.tcursor_delta, 7))} {funit}Hz")
+        else:
+            self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} {unit}s\nT2 = {round(self.data.tcursor2_t,7)} {unit}s\n" + 
+                                f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s\n" +
+                                f"1/ΔT = ∞ {funit}Hz")
+
         for i in range(self.data.n_channels):
             self.chan_cursorinfo[i].set(f"V1 = {round(self.data.cursor1_v[i], 5)} V\nV2 = {round(self.data.cursor2_v[i], 5)} V\n" +
                                         f"ΔV = {round(self.data.cursor_delta[i], 5)} V")

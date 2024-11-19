@@ -110,8 +110,8 @@ class PlotData:
                             self.offset[i] + (1/self.vdiv[i]) * (self.array[i+1]), self.colors[i]
                             , label=self.channel_names[i])
                     if self.cursor_chk[i] == True:
-                        self.cursor1_v[i] = (self.min[i] + self.delta_y[i] * self.cursor1[i])
-                        self.cursor2_v[i] = (self.min[i] + self.delta_y[i] * self.cursor2[i])
+                        self.cursor1_v[i] = (self.min[i] + self.delta_y[i] * self.cursor1[i]) / self.vdiv[i]
+                        self.cursor2_v[i] = (self.min[i] + self.delta_y[i] * self.cursor2[i]) / self.vdiv[i]
                         self.plot.axhline(y=self.offset[i] + self.cursor1_v[i], color=self.colors[i], linestyle=':')
                         self.plot.axhline(y=self.offset[i] + self.cursor2_v[i], color=self.colors[i], linestyle='--')
                         self.cursor_delta[i] = self.cursor1_v[i] - self.cursor2_v[i]
