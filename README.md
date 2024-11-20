@@ -11,7 +11,7 @@ Se debería abrir una ventana de bienvenida así:
 ![image](images/init_scr.png)
 
 ### Selección del archivo .csv
-Para buscar el archivo deseado, presionar _Browse_, seleccionar el archivo en la nueva ventana, y presionar _open_ para abrirlo en la aplicación.
+Para buscar el archivo deseado, presionar _Browse_, seleccionar el archivo en la nueva ventana, y presionar _Open_ para abrirlo en la aplicación.
 
 ![image](images/browse.png)
 
