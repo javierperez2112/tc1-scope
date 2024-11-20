@@ -8,16 +8,16 @@ Para abrir la GUI, se debe ejecutar el archivo _gui.py_.
 ```python3 /src/gui.py```
 Se debería abrir una ventana de bienvenida así:
 
-(foto bienvenida)
+![image](images/init_scr.png)
 
 ### Selección del archivo .csv
 Para buscar el archivo deseado, presionar _Browse_, seleccionar el archivo en la nueva ventana, y presionar _open_ para abrirlo en la aplicación.
 
-(foto browse)
+![image](images/browse.png)
 
 Si el archivo es válido, se abrirá una ventana con el gráfico correspondiente.
 
-(foto gráfico)
+![image](images/init_graph.png)
 
 ### Manejo de la aplicación
 
@@ -31,7 +31,7 @@ Para cada canal del osciloscopio guardado en el archivo, aparecerá un canal en 
 * Cambiar el color en el gráfico
 * Activar/desactivar y utilizar un par de cursores
 
-(foto canales)
+![image](images/channels.png)
 
 #### Separación de la cuadrícula y tiempo
 
@@ -41,11 +41,13 @@ La configuración de _Time zoom_ y _Time offset_ funcionan de manera análoga a 
 
 El par de cursores de tiempo funciona igual que los de tensión en cada canal. Las líneas quedan estáticas en el gráfico independientemente del _zoom_ y _offset_. Esto se puede utilizar para obtener mejor precisión con el cursor.
 
-(foto tiempo)
+![image](images/time.png)
 
 #### Títulos y unidades
 
 Es posible editar el título del gráfico, así como los de los ejes. Si se activa _X units_ o _Y units_, el título del eje correspondiente llevará especificadas las unidades que se utilizan en ese eje. Si se activa _Legend_, se mostrará la leyenda con los nombres de los canales en el gráfico. Además, si el archivo abierto contiene exactamente dos canales, aparecerá la opción de activar el modo XY, donde en lugar de graficar ambos canales contra el tiempo, se grafica uno contra otro.
+
+![image](images/titles_units.png)
 
 #### Actualización del gráfico
 
