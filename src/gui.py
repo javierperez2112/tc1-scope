@@ -333,8 +333,8 @@ class TC1ScopeApp:
                                 f"1/ΔT = ∞ {funit}Hz")
 
         for i in range(self.data.n_channels):
-            self.chan_cursorinfo[i].set(f"V1 = {round(self.data.cursor1_v[i], 5)} V\nV2 = {round(self.data.cursor2_v[i], 5)} V\n" +
-                                        f"ΔV = {round(self.data.cursor_delta[i], 5)} V")
+            self.chan_cursorinfo[i].set(f"V1 = {round(self.data.cursor1_v[i] * float(self.chan_vdiv[i].get()), 5)} V\nV2 = {round(self.data.cursor2_v[i] * float(self.chan_vdiv[i].get()), 5)} V\n" +
+                                        f"ΔV = {round(self.data.cursor_delta[i] * float(self.chan_vdiv[i].get()), 5)} V")
 
 # Start the application
 if __name__ == "__main__":
