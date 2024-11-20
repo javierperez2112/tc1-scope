@@ -119,8 +119,8 @@ class PlotData:
                     if (self.channel_names[i] != "") and (self.legend == True):
                         self.plot.legend() 
             if self.tcursor_chk == True:
-                self.tcursor1_t = (self.lowlimx / self.zoom + self.delta_t * self.tcursor1 / self.zoom)*(1/gridx_exp)  ###
-                self.tcursor2_t = (self.lowlimx / self.zoom + self.delta_t * self.tcursor2 / self.zoom)*(1/gridx_exp)  ###
+                self.tcursor1_t = (self.lowlimx - self.toffset + self.delta_t * self.tcursor1)*(1/gridx_exp)/self.zoom  ###
+                self.tcursor2_t = (self.lowlimx - self.toffset + self.delta_t * self.tcursor2)*(1/gridx_exp)/self.zoom  ###
                 self.tcursor_delta = self.tcursor1_t - self.tcursor2_t
                 self.plot.axvline(x=self.tcursor1_t, linestyle=':', color='black')
                 self.plot.axvline(x=self.tcursor2_t, linestyle='--', color='black')
