@@ -333,7 +333,7 @@ class TC1ScopeApp:
                                 f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s\n" +
                                 f"1/ΔT = {abs(round(1 / self.data.tcursor_delta, 7))} {funit}Hz")
         else:
-            self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t,7)} {unit}s\nT2 = {round(self.data.tcursor2_t,7)} {unit}s\n" + 
+            self.tcursor_info.set(f"T1 = {round(self.data.tcursor1_t + self.data.toffset,7)} {unit}s\nT2 = {round(self.data.tcursor2_t + self.data.toffset,7)} {unit}s\n" + 
                                 f"ΔT = {round(self.data.tcursor_delta,7)} {unit}s\n" +
                                 f"1/ΔT = ∞ {funit}Hz")
 
