@@ -44,6 +44,9 @@ class TC1ScopeApp:
         self.scl_toffsetfine = tk.Scale(master=self.frm_time, resolution=0.1, orient=tk.HORIZONTAL, showvalue=False, length=200)
         self.btn_offsetzero = tk.Button(text="Reset offset", master=self.frm_time)
         #Titles
+        self.legend = tk.BooleanVar(value=True)
+        self.chk_legend = tk.Checkbutton(master=self.frm_titles, text="Legend", onvalue=True, offvalue=False, variable=self.legend)
+        self.chk_legend.config(command=self.update_channels)
         self.lbl_title = tk.Label(text="Title", master=self.frm_titles)
         self.ent_title = tk.Entry(master=self.frm_titles)
         self.lbl_xtitle = tk.Label(text="X axis title", master=self.frm_titles)
@@ -107,6 +110,7 @@ class TC1ScopeApp:
         self.ent_ytitle.pack()
         self.chk_xunits.pack()
         self.chk_yunits.pack()
+        self.chk_legend.pack()
         # Grid
         self.lbl_gridx.pack()
         self.spb_gridx.pack()
@@ -289,6 +293,7 @@ class TC1ScopeApp:
         self.data.title = self.ent_title.get()
         self.data.xtitle = self.ent_xtitle.get()
         self.data.ytitle = self.ent_ytitle.get()
+        self.data.legend = self.legend.get()
         
         self.data.tcursor_chk = self.tcursor.get()
         self.data.tcursor1 = float(self.scl_tcursor1.get())

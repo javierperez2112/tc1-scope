@@ -73,6 +73,7 @@ class PlotData:
         self.xtitle = ""
         self.ytitle = ""
         self.xymode = False
+        self.legend = True
         for i in range(self.n_channels):
             self.showchannels.append(True)
             self.channel_names.append(self.array[i][1])
@@ -115,7 +116,7 @@ class PlotData:
                         self.plot.axhline(y=self.offset[i] + self.cursor1_v[i], color=self.colors[i], linestyle=':')
                         self.plot.axhline(y=self.offset[i] + self.cursor2_v[i], color=self.colors[i], linestyle='--')
                         self.cursor_delta[i] = self.cursor1_v[i] - self.cursor2_v[i]
-                    if self.channel_names[i] != "":
+                    if (self.channel_names[i] != "") and (self.legend == True):
                         self.plot.legend() 
             if self.tcursor_chk == True:
                 self.tcursor1_t = (self.lowlimx / self.zoom + self.delta_t * self.tcursor1 / self.zoom)*(1/gridx_exp)  ###
